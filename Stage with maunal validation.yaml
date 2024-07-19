@@ -1,0 +1,92 @@
+--- 
+name : 'pipeline with Yaml with manual validation'
+
+trigger: none
+
+pool: Default
+
+stages:
+  - stage: 
+    displayName: 'terraform init stage'
+    jobs:
+     - job: job1
+       displayName: "Initialize working directory"
+       steps:
+       - task: TerraformTaskV4@4
+         inputs:
+           provider: 'azurerm'
+           command: 'init'
+           workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Dev'
+           backendServiceArm: '14072024 service connection'
+           backendAzureRmResourceGroupName: 'Abhishek_RG_donot_delete'
+           backendAzureRmStorageAccountName: 'tfstorageabhi2424'
+           backendAzureRmContainerName: 'homelockcontainer'
+           backendAzureRmKey: '17072024_terraform.tfstate'
+  
+  - stage: 
+    displayName: 'terraform plan stage'
+    jobs:
+      - job: job2
+        displayName: "Create plan for review"
+        steps:
+        
+        - task: TerraformTaskV4@4
+          inputs:
+           provider: 'azurerm'
+           command: 'init'
+           workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Dev'
+           backendServiceArm: '14072024 service connection'
+           backendAzureRmResourceGroupName: 'Abhishek_RG_donot_delete'
+           backendAzureRmStorageAccountName: 'tfstorageabhi2424'
+           backendAzureRmContainerName: 'homelockcontainer'
+           backendAzureRmKey: '17072024_terraform.tfstate'
+
+        - task: TerraformTaskV4@4
+          displayName: "terraform plan"
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Dev'
+            environmentServiceNameAzureRM: '14072024 service connection'
+       
+       
+  - stage: 
+    displayName: "Manual validation before Apply"
+    jobs:
+      - job: job3
+        displayName: 'Validation Job'
+        pool: server
+        steps:
+        - task: ManualValidation@1
+         
+          displayName: 'Manual vaildation is required'
+          inputs:
+            notifyUsers: 'abhishekgautam1@hotmail.com'
+            approvers: 'abhishekgautam1@hotmail.com'
+    
+  
+  - stage: 
+    displayName: "Final stage terraform Apply"
+    jobs:
+      - job: job4
+        displayName: "Terraform Apply"
+        steps:
+        
+        - task: TerraformTaskV4@4
+          inputs:
+           provider: 'azurerm'
+           command: 'init'
+           workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Dev'
+           backendServiceArm: '14072024 service connection'
+           backendAzureRmResourceGroupName: 'Abhishek_RG_donot_delete'
+           backendAzureRmStorageAccountName: 'tfstorageabhi2424'
+           backendAzureRmContainerName: 'homelockcontainer'
+           backendAzureRmKey: '17072024_terraform.tfstate'
+  
+        - task: TerraformTaskV4@4
+          displayName: "terraform Apply"
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Dev'
+            environmentServiceNameAzureRM: '14072024 service connection'
